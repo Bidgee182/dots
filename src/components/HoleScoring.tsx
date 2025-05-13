@@ -3,6 +3,9 @@ import React, { useState, useEffect } from "react";
 import { useGame } from "../context/GameContext";
 import { Button } from "./ui/button";
 import Leaderboard from "./Leaderboard";
+import type { HoleData } from "../context/GameContext";
+
+const PAR_OPTIONS = [3, 4, 5];
 
 export default function HoleScoring({ onComplete }: { onComplete: () => void }) {
   const {
@@ -24,14 +27,18 @@ export default function HoleScoring({ onComplete }: { onComplete: () => void }) 
   const [showShots, setShowShots] = useState(false);
 
   useEffect(() => {
+    resetHole();
+  }, [currentHoleIndex]);
+
+  const resetHole = () => {
     setPar(null);
     setSelectedShots({});
     setGreenHitMap({});
     setPuttResults({});
     setBonusSummary([]);
-    setShowRecap(false);
     setShowShots(false);
-  }, [currentHoleIndex]);
+    setShowRecap(false);
+  };
 
   const handleShotSelect = (shotType: string, player: string) => {
     setSelectedShots((prev) => ({
@@ -41,7 +48,7 @@ export default function HoleScoring({ onComplete }: { onComplete: () => void }) 
   };
 
   const handleNext = () => {
-    const bonuses: import("../context/GameContext").HoleData["bonuses"] = {
+    const bonuses: HoleData["bonuses"] = {
       closestToPin: null,
       greenInTwo: null,
       cleanSweep: false,
@@ -57,7 +64,7 @@ export default function HoleScoring({ onComplete }: { onComplete: () => void }) 
 
     const teamStrokes = Object.keys(selectedShots).length;
 
-    addHoleData({
+    const holeData: HoleData = {
       holeNumber: currentHoleIndex + 1,
       par: par ?? 0,
       shots: Object.entries(selectedShots).map(([type, player]) => ({ type, player })),
@@ -65,19 +72,17 @@ export default function HoleScoring({ onComplete }: { onComplete: () => void }) 
       penalties: {},
       teamStrokes,
       notes: notes.join(", "),
-    });
+    };
 
+    addHoleData(holeData);
     setBonusSummary(notes);
     setShowRecap(true);
   };
 
   const handleAdvance = () => {
     setShowRecap(false);
-    if (currentHoleIndex + 1 >= totalHoles) {
-      onComplete();
-    } else {
-      advanceHole();
-    }
+    if (currentHoleIndex + 1 >= totalHoles) onComplete();
+    else advanceHole();
   };
 
   const renderShotSelector = (label: string) => (
@@ -104,41 +109,37 @@ export default function HoleScoring({ onComplete }: { onComplete: () => void }) 
       </h2>
 
       <div className="max-w-4xl mx-auto bg-gray-800 rounded-lg p-6">
-        {!par && (
-          <>
-            <label className="block mb-2 text-sm font-bold">Select Par:</label>
-            <div className="flex gap-2 mb-4">
-              {[3, 4, 5].map((value) => (
-                <Button
-                  key={value}
-                  onClick={() => {
-                    setPar(value);
-                    setShowShots(true);
-                  }}
-                  className={par === value ? "bg-yellow-500 text-black" : "bg-white text-black"}
-                >
-                  Par {value}
-                </Button>
-              ))}
-            </div>
-          </>
-        )}
+        <label className="block mb-2 text-sm font-bold">Select Hole Par:</label>
+        <div className="flex gap-2 mb-4">
+          {PAR_OPTIONS.map((value) => (
+            <Button
+              key={value}
+              onClick={() => {
+                setPar(value);
+                setShowShots(true);
+              }}
+              className={par === value ? "bg-yellow-500 text-black" : "bg-white text-black"}
+            >
+              Par {value}
+            </Button>
+          ))}
+        </div>
 
         {par && showShots && (
           <>
             {renderShotSelector("Tee")}
-            {par >= 4 && renderShotSelector("Shot 2")}
-            {par === 5 && renderShotSelector("Shot 3")}
+            {(par >= 4) && renderShotSelector("Shot 2")}
+            {(par === 5) && renderShotSelector("Shot 3")}
             {renderShotSelector("Putt 1")}
           </>
         )}
 
-        <Button
-          onClick={handleNext}
-          className="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-bold mt-6"
-        >
-          Next Hole ➡
-        </Button>
+        <div className="flex justify-between mt-6">
+          <Button onClick={resetHole} className="bg-red-600 text-white">Reset Hole</Button>
+          <Button onClick={handleNext} className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold">
+            Next Hole ➡
+          </Button>
+        </div>
 
         {showRecap && (
           <div className="mt-6 p-4 bg-gray-900 rounded-lg">
