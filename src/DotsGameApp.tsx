@@ -64,7 +64,7 @@ function GameWrapper({
 
   return (
     <>
-      <HoleScoring />
+      <HoleScoring onComplete={() => {}} />
       <TeamScoreSummary />
       <Leaderboard />
     </>
