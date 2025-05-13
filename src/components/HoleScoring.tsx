@@ -51,7 +51,7 @@ export default function HoleScoring({ onComplete }: { onComplete: () => void }) 
     const notes: string[] = [];
 
     if (par === 3 && greenHitMap["Tee"] && selectedShots["Tee"]) {
-      bonuses.closestToPin = selectedShots["Tee"] as string;
+      bonuses.closestToPin = selectedShots["Tee"] ?? null;
       notes.push(`${selectedShots["Tee"]} won Nearest the Pin!`);
     }
 
