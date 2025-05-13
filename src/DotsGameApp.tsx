@@ -64,7 +64,7 @@ function GameWrapper({
 
   return (
     <>
-      <HoleScoring onComplete={() => {}} />
+      <HoleScoring onComplete={() => router.push("/full-leaderboard")} />
       <TeamScoreSummary />
       <Leaderboard />
     </>
